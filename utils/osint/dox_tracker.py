@@ -21,7 +21,7 @@ def get_search_input(search_type):
     elif search_type in ['2', '02']:
         last_name = input("Enter Last Name: ")
         first_name = input("Enter First Name: ")
-        return last_name, first_name
+        return f"{last_name} {first_name}"  # Return as a single string
     elif search_type in ['3', '03']:
         return input("Enter Search Query: ")
     else:
@@ -39,7 +39,7 @@ def display_site_options():
     """
     print(options)
 
-def generate_search_url(site, search_type, search_terms):
+def generate_search_url(site, search_terms):
     base_urls = {
         '1': "https://www.facebook.com/search/top/?init=quick&q=",
         '2': "https://www.youtube.com/results?search_query=",
@@ -50,37 +50,44 @@ def generate_search_url(site, search_type, search_terms):
         '7': "https://www.pagesjaunes.fr/pagesblanches/recherche?quoiqui="
     }
     
-    if search_type == '2':
-        last_name, first_name = search_terms
-        query = f"{last_name} {first_name}"
-    else:
-        query = search_terms
+    url = base_urls.get(site, '')
     
-    url = base_urls.get(site, '') + query
     if site == '5':
-        url = f"{url}{query.replace(' ', '_')}"
+        # Peekyou has a different URL structure
+        url = f"{url}{search_terms.replace(' ', '_')}"
+    else:
+        url += search_terms
     
     webbrowser.open(url)
 
 def main():
     try:
-        clear()
-        display_search_options()
-        search_type = input("Select Search Type: ")
-        
-        search_terms = get_search_input(search_type)
-        
-        while True:
-            display_site_options()
-            site_choice = input("Select Site: ")
+        while True:  # Added loop to allow multiple searches
+            clear()
+            display_search_options()
+            search_type = input("Select Search Type (or 'q' to quit): ")
             
-            if site_choice in ['1', '2', '3', '4', '5', '6', '7']:
-                generate_search_url(site_choice, search_type, search_terms)
-            else:
-                print("Invalid site choice. Please select a valid option.")
+            if search_type.lower() == 'q':
+                break
+                
+            search_terms = get_search_input(search_type)
+            
+            while True:
+                clear()
+                display_site_options()
+                site_choice = input("Select Site (or 'b' to go back): ")
+                
+                if site_choice.lower() == 'b':
+                    break
+                elif site_choice in ['1', '2', '3', '4', '5', '6', '7']:
+                    generate_search_url(site_choice, search_terms)
+                else:
+                    print("Invalid site choice. Please select a valid option.")
+                    input("Press Enter to continue...")
     
     except Exception as e:
         handle_error(e)
+        input("Press Enter to continue...")
 
 if __name__ == "__main__":
     main()
